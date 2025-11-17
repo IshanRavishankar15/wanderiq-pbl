@@ -1,6 +1,8 @@
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 
 const ajv = new Ajv();
+addFormats(ajv);
 
 /**
  * @typedef {object} Activity
@@ -19,24 +21,15 @@ const ajv = new Ajv();
  */
 
 /**
- * @typedef {object} Budget
- * @property {number} id
- * @property {string} category
- * @property {number} amount
- */
-
-/**
  * @typedef {object} Itinerary
  * @property {string} destination
  * @property {string} startDate - ISO date string
  * @property {string} endDate - ISO date string
  * @property {number} travelers
- * @property {string} style
  * @property {string} interests
  * @property {string} summary
  * @property {string} image - URL
  * @property {Day[]} days
- * @property {Budget[]} budget
  */
 
 export const ItinerarySchema = {
@@ -46,7 +39,6 @@ export const ItinerarySchema = {
     startDate: { type: 'string', format: 'date' },
     endDate: { type: 'string', format: 'date' },
     travelers: { type: 'integer', minimum: 1 },
-    style: { type: 'string' },
     interests: { type: 'string' },
     summary: { type: 'string' },
     image: { type: 'string', format: 'uri' },
@@ -75,21 +67,9 @@ export const ItinerarySchema = {
         required: ['id', 'date', 'activities'],
       },
     },
-    budget: {
-        type: 'array',
-        items: {
-            type: 'object',
-            properties: {
-                id: { type: 'integer' },
-                category: { type: 'string' },
-                amount: { type: 'number' },
-            },
-            required: ['id', 'category', 'amount'],
-        }
-    }
   },
-  required: ['destination', 'startDate', 'endDate', 'travelers', 'summary', 'image', 'days', 'budget'],
-  additionalProperties: true, // Allow for fallback warning field
+  required: ['destination', 'startDate', 'endDate', 'travelers', 'summary', 'image', 'days'],
+  additionalProperties: true,
 };
 
 export const FlightSchema = {
@@ -109,21 +89,5 @@ export const FlightSchema = {
   required: ['id', 'airline', 'departure', 'arrival', 'price'],
 };
 
-export const HotelSchema = {
-  type: 'object',
-  properties: {
-    id: { type: 'integer' },
-    name: { type: 'string' },
-    rating: { type: 'number', minimum: 0, maximum: 5 },
-    pricePerNight: { type: 'number' },
-    currency: { type: 'string' },
-    freeCancellation: { type: 'boolean' },
-    location: { type: 'string' },
-    meta: { type: 'object' },
-  },
-  required: ['id', 'name', 'rating', 'pricePerNight'],
-};
-
 export const validateItinerary = ajv.compile(ItinerarySchema);
 export const validateFlight = ajv.compile(FlightSchema);
-export const validateHotel = ajv.compile(HotelSchema);

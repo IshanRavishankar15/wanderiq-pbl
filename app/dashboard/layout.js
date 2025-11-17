@@ -15,13 +15,9 @@ const DashboardWrapper = styled.div`
 const MainContent = styled.main`
   flex-grow: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1rem;
 `;
 
-/**
- * Layout component for the dashboard section.
- * Includes the main Navbar and handles animated page transitions.
- */
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
@@ -37,7 +33,7 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   if (!isMounted) {
-    return null; // or a loading spinner
+    return null; 
   }
 
   return (

@@ -8,13 +8,13 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // Basic server-side validation of inputs
     if (!body.destination || !body.startDate || !body.endDate || !body.budget) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     if (!process.env.OPENAI_API_KEY) {
       console.warn("AI unavailable: OPENAI_API_KEY not set. Using fallback.");
+      await new Promise(resolve => setTimeout(resolve, 2000)); 
       const dummyItinerary = getDummyItinerary(body);
       return NextResponse.json(dummyItinerary);
     }
@@ -27,12 +27,10 @@ export async function POST(request) {
       return NextResponse.json(getDummyItinerary(body));
     }
 
-    // Validate the AI's JSON output against our schema
     const isValid = validateItinerary(aiResponse);
     if (!isValid) {
       console.error("AI response failed schema validation:", validateItinerary.errors);
-      // Fallback to dummy data if AI output is invalid
-      return NextResponse.json(getDummyItinerary(body));
+      return NextResponse.json({ error: "AI returned invalid data structure." }, { status: 500 });
     }
     
     return NextResponse.json(aiResponse);

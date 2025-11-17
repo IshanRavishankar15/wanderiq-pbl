@@ -108,14 +108,10 @@ const ThemeToggle = styled.button`
 
 const navItems = [
   { href: '/dashboard', label: 'Create Itinerary' },
-  { href: '/dashboard/bookings', label: 'Bookings' },
-  { href: '/dashboard/previous', label: 'Previous Trips' },
+  { href: '/dashboard/saved', label: 'Saved Trips' },
   { href: '/dashboard/recommendations', label: 'Recommendations' },
 ];
 
-/**
- * Main navigation bar for the dashboard.
- */
 export default function Navbar() {
   const pathname = usePathname();
   const [isLightMode, setIsLightMode] = useState(false);
@@ -124,7 +120,7 @@ export default function Navbar() {
   useEffect(() => {
     const isLight = document.body.classList.contains('light-mode');
     setIsLightMode(isLight);
-    setHoveredPath(pathname); // Sync hover state with path changes
+    setHoveredPath(pathname); 
   }, [pathname]);
 
   const toggleTheme = () => {

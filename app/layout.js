@@ -1,4 +1,8 @@
+
+import { Quicksand } from 'next/font/google';
 import StyledComponentsRegistry from '@/components/StyledComponentsRegistry';
+const quicksand = Quicksand({ subsets: ['latin'], weight: ['400', '700'] });
+
 
 export const metadata = {
   title: 'WanderIQ',
@@ -8,7 +12,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+  <body className={quicksand.className}>
         <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
       </body>
     </html>

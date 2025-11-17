@@ -1,7 +1,3 @@
-/**
- * Provides deterministic dummy data for fallback scenarios or when APIs are unavailable.
- */
-
 export const getDummyItinerary = (inputs) => ({
   destination: inputs.destination || "Paris",
   startDate: inputs.startDate || "2025-10-15",
@@ -65,27 +61,4 @@ export const getDummyFlights = () => ([
     stops: 1,
     meta: { type: 'dummy' }
   }
-]);
-
-export const getDummyHotels = () => ([
-    {
-        id: 1,
-        name: "Hotel de Crillon",
-        rating: 5,
-        pricePerNight: 950,
-        currency: "USD",
-        freeCancellation: true,
-        location: "Central Paris",
-        meta: { type: 'dummy' }
-    },
-    {
-        id: 2,
-        name: "Le Citizen Hotel",
-        rating: 4.5,
-        pricePerNight: 280,
-        currency: "USD",
-        freeCancellation: true,
-        location: "Canal Saint-Martin",
-        meta: { type: 'dummy' }
-    }
 ]);

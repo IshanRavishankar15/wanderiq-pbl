@@ -1,4 +1,4 @@
-# WandrAI
+# WanderIQ
 
 A polished, production-minded Next.js web application that generates personalized travel itineraries using AI. Built with the App Router, styled-components, and Framer Motion.
 
@@ -30,5 +30,5 @@ Follow these steps to set up and run the project locally.
 
 ```bash
 git clone [https://github.com/your-username/wandrai-travel-planner.git](https://github.com/your-username/wandrai-travel-planner.git)
-cd wandrai-travel-planner
+cd wanderiq-travel-planner
 ```

@@ -11,7 +11,6 @@ const ubuntu = Ubuntu({
   weight: ['400', '700'],
 });
 
-/* Keyframes for background animation */
 const gradientShift = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -73,7 +72,7 @@ const Title = styled(motion.h1)`
 const Subtitle = styled(motion.p)`
   position: relative;
   z-index: 1; /* Bring text above overlay */
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   margin-bottom: 2.5rem;
   max-width: 600px;
   color: #d1c4e9;
@@ -97,7 +96,7 @@ const CTAButton = styled(motion.button)`
   background-size: 200% auto;
   color: white;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
