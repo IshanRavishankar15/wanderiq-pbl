@@ -7,7 +7,7 @@ WanderIQ is an intelligent travel planning application that leverages AI to gene
 ## ✨ Key Features
 
 ### **AI-Powered Itineraries**
-Generates detailed day-by-day plans based on destination, budget, travelers, and interests using structured JSON schemas.
+Generates detailed day-by-day plans based on destination, budget and travelers tailored towards the user's interests.
 
 ### **Conversational Customization**
 Modify existing itineraries using natural language.
@@ -17,16 +17,10 @@ Modify existing itineraries using natural language.
 Integrates with **FlightAPI.io** to provide real-time flight options and pricing.
 
 ### **Dynamic Visuals**
-Automatically fetches beautiful destination images using the **Unsplash API**.
-
-### **Schema Validation**
-Uses **Ajv** to strictly validate AI outputs — preventing UI crashes due to malformed data.
+Automatically fetches beautiful destination images.
 
 ### **Smart Recommendations**
 Recommends new destinations based on saved trip history.
-
-### **Local Persistence**
-Trips are automatically saved using browser `localStorage`.
 
 ---
 
