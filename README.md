@@ -1,34 +1,52 @@
-# WanderIQ
+# ✈️ WanderIQ – AI Travel Assistant
 
-A polished, production-minded Next.js web application that generates personalized travel itineraries using AI. Built with the App Router, styled-components, and Framer Motion.
+WanderIQ is an intelligent travel planning application that leverages AI to generate detailed, personalized travel itineraries, fetch real-time flight suggestions, and visualize destinations.
 
-## ✨ Features
+---
 
-- **AI-Powered Itineraries**: Get detailed, day-by-day travel plans by simply providing your destination, dates, and interests.
-- **Interactive Chat**: Modify your itinerary through a conversational AI chat interface.
-- **Flight & Hotel Suggestions**: Receive relevant booking suggestions for your trip.
-- **Client-Side Navigation**: A smooth, app-like experience with animated page transitions, powered by the Next.js App Router.
-- **Persistent Trips**: Save and manage your previous trips using `localStorage`.
-- **Elegant Dark Theme**: A sleek, animated dark purple theme for an immersive user experience.
-- **Graceful Fallbacks**: The application provides dummy data when AI services are unavailable.
+## ✨ Key Features
+
+### **AI-Powered Itineraries**
+Generates detailed day-by-day plans based on destination, budget and travelers tailored towards the user's interests.
+
+### **Conversational Customization**
+Modify existing itineraries using natural language.
+> Example: “Change day 2 to be more relaxed.”
+
+### **Real-Time Flight Search**
+Integrates with **FlightAPI.io** to provide real-time flight options and pricing.
+
+### **Dynamic Visuals**
+Automatically fetches beautiful destination images.
+
+### **Smart Recommendations**
+Recommends new destinations based on saved trip history.
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: styled-components
-- **Animation**: Framer Motion
-- **Icons**: Lucide React
-- **AI**: OpenAI GPT-4
-- **Testing**: Jest & React Testing Library
-- **Schema Validation**: AJV
+- **Framework:** Next.js 13+ (App Router)  
+- **AI Model:** OpenAI gpt-4o-mini  
+- **Styling:** Styled Components & CSS Variables  
+- **Animations:** Framer Motion  
+- **Validation:** Ajv JSON Schema Validator  
 
-## 🚀 Getting Started
+### **APIs Used**
+- OpenAI API (Itinerary Generation)  
+- Unsplash API (Image Fetching)  
+- FlightAPI.io (Flight Data)
 
-Follow these steps to set up and run the project locally.
+---
 
-### 1. Clone the Repository
+## 🌐 Live Deployment
 
-```bash
-git clone [https://github.com/your-username/wandrai-travel-planner.git](https://github.com/your-username/wandrai-travel-planner.git)
-cd wanderiq-travel-planner
-```
+WanderIQ is deployed and accessible at:
+
+👉 **https://wanderiq-pbl.vercel.app**
+
+---
+
+## 📜 License
+
+MIT License — free to use and adapt.
