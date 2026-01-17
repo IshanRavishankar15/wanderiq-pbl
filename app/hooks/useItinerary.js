@@ -10,13 +10,12 @@ import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 const LOCAL_STORAGE_KEY = 'wanderiq_saved_trips';
 
 export const useItinerary = () => {
-    const { user } = useAuth(); // Access auth state
+    const { user } = useAuth();
     const [itinerary, setItinerary] = useState(null);
     const [flightSuggestions, setFlightSuggestions] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false); 
 
-    // --- Same Generate Logic as before ---
     const generateItinerary = useCallback(async (inputs) => {
         setIsLoading(true);
         setItinerary(null);
@@ -78,7 +77,6 @@ export const useItinerary = () => {
         }));
     }, []);
     
-    // --- HYBRID SAVE LOGIC ---
     const saveCurrentItinerary = useCallback(async () => {
         if (!itinerary) {
             toast.error('No itinerary to save.');
@@ -90,16 +88,12 @@ export const useItinerary = () => {
 
         try {
             if (user) {
-                // FIRESTORE SAVE
-                // Save to: users/{uid}/trips/{tripId}
                 const tripRef = doc(db, 'users', user.uid, 'trips', tripId.toString());
                 await setDoc(tripRef, tripToSave);
             } else {
-                // LOCAL STORAGE SAVE (Guest)
                 const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
                 let storedTrips = storedTripsRaw ? JSON.parse(storedTripsRaw) : [];
                 
-                // If editing, remove old version first
                 if (itinerary.savedId) {
                     storedTrips = storedTrips.filter(t => t.savedId !== itinerary.savedId);
                 }
@@ -108,7 +102,6 @@ export const useItinerary = () => {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
             }
 
-            // Update local state ID to match saved ID
             setItinerary(prev => ({ ...prev, savedId: tripId }));
 
             toast.success('Trip saved successfully!', {
@@ -123,7 +116,7 @@ export const useItinerary = () => {
             console.error("Failed to save trip:", error);
             toast.error('Failed to save trip. Please try again.');
         }
-    }, [itinerary, user]); // Depend on user state
+    }, [itinerary, user]); 
 
 
     return { 

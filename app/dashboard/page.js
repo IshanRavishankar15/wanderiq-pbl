@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { useItinerary } from '@/hooks/useItinerary';
 import { useChat } from '@/hooks/useChat';
-// 1. Import Auth and Firebase
 import { useAuth } from '@/components/providers/AuthProvider';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -61,7 +60,6 @@ function DashboardPageContent() {
   const prefilledDestination = searchParams.get('destination');
   const editTripId = searchParams.get('editTripId');
 
-  // 2. Get User from Auth
   const { user } = useAuth();
 
   const { 
@@ -89,12 +87,10 @@ function DashboardPageContent() {
     return () => observer.disconnect();
   }, []);
 
-  // 3. MODIFIED: Handle loading logic for both Firestore (Auth) and LocalStorage (Guest)
   useEffect(() => {
     const loadTripToEdit = async () => {
         if (!editTripId) return;
 
-        // A. If Logged In -> Fetch from Firestore
         if (user) {
             try {
                 const docRef = doc(db, 'users', user.uid, 'trips', editTripId);
@@ -111,7 +107,6 @@ function DashboardPageContent() {
                 toast.error("Failed to load trip.");
             }
         } 
-        // B. If Guest -> Fetch from Local Storage
         else {
             const storedTripsRaw = localStorage.getItem('wanderiq_saved_trips');
             if (storedTripsRaw) {
@@ -127,7 +122,7 @@ function DashboardPageContent() {
     };
 
     loadTripToEdit();
-  }, [editTripId, user, setItinerary]); // Re-run if user status changes or ID changes
+  }, [editTripId, user, setItinerary]); 
 
   const handleItineraryUpdate = (newItinerary) => {
     applyUpdatedItinerary(newItinerary);

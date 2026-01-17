@@ -209,7 +209,6 @@ const ToggleText = styled.p`
   }
 `;
 
-// MODIFIED: Updated Styling for better visibility
 const GuestLink = styled(Link)`
   display: flex;
   align-items: center;

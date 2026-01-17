@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // MODIFIED: Import useRouter
+import { usePathname, useRouter } from 'next/navigation'; 
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Plane, Sun, Moon, User, LogOut } from 'lucide-react';
@@ -142,10 +142,10 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter(); // MODIFIED: Init router
+  const router = useRouter(); 
   const [isLightMode, setIsLightMode] = useState(false);
   const [hoveredPath, setHoveredPath] = useState(pathname);
-  const { user, logout } = useAuth(); // Removed loginWithGoogle since we redirect now
+  const { user, logout } = useAuth(); 
 
   useEffect(() => {
     const isLight = document.body.classList.contains('light-mode');
@@ -202,7 +202,6 @@ export default function Navbar() {
                 <LogOut size={16} />
             </ProfileButton>
         ) : (
-            // MODIFIED: Redirects to Landing Page instead of triggering Google Login directly
             <ProfileButton onClick={() => router.push('/')}>
                 <User size={18} />
                 <span>Sign In</span>

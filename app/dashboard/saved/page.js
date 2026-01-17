@@ -33,28 +33,24 @@ export default function SavedTripsPage() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const { user } = useAuth(); // Get auth state
+    const { user } = useAuth(); 
 
-    // Hybrid Fetch Logic
     useEffect(() => {
         const fetchTrips = async () => {
             setLoading(true);
             try {
                 if (user) {
-                    // 1. Fetch from Firestore
                     const tripsRef = collection(db, 'users', user.uid, 'trips');
                     const q = query(tripsRef);
                     const querySnapshot = await getDocs(q);
                     const firestoreTrips = querySnapshot.docs.map(doc => ({
                         ...doc.data(),
-                        // Ensure savedId matches the doc ID for deletion logic
                         savedId: parseInt(doc.id) || doc.id 
                     }));
                     
                     const sortedTrips = firestoreTrips.sort((a, b) => b.savedId - a.savedId);
                     setTrips(sortedTrips);
                 } else {
-                    // 2. Fetch from LocalStorage (Guest)
                     const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
                     if (storedTripsRaw) {
                         const parsedTrips = JSON.parse(storedTripsRaw);
@@ -73,20 +69,17 @@ export default function SavedTripsPage() {
         };
 
         fetchTrips();
-    }, [user]); // Re-run when user state changes
+    }, [user]);
 
     const handleDeleteTrip = async (tripIdToDelete) => {
         try {
             if (user) {
-                // Delete from Firestore
                 await deleteDoc(doc(db, 'users', user.uid, 'trips', tripIdToDelete.toString()));
             } else {
-                // Delete from LocalStorage
                 const updatedTrips = trips.filter(trip => trip.savedId !== tripIdToDelete);
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
             }
 
-            // Update local state
             setTrips(prev => prev.filter(t => t.savedId !== tripIdToDelete));
             toast.success("Trip deleted.");
         } catch (error) {

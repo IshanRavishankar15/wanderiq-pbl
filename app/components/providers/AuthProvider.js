@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ADDED: Email Login
   const loginWithEmail = async (email, password) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -48,21 +47,18 @@ export const AuthProvider = ({ children }) => {
       router.push('/dashboard');
     } catch (error) {
       console.error("Email login failed:", error);
-      // Firebase error messages are technical, so we simplify common ones
       if (error.code === 'auth/invalid-credential') {
         toast.error('Invalid email or password.');
       } else {
         toast.error('Failed to sign in.');
       }
-      throw error; // Re-throw to handle UI state in the component
+      throw error; 
     }
   };
 
-  // ADDED: Email Registration
   const registerWithEmail = async (email, password, name) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Optional: Update display name immediately
       await updateProfile(userCredential.user, { displayName: name });
       
       toast.success('Account created successfully!');
@@ -95,8 +91,8 @@ export const AuthProvider = ({ children }) => {
       user, 
       loading, 
       loginWithGoogle, 
-      loginWithEmail,     // Exported
-      registerWithEmail,  // Exported
+      loginWithEmail,   
+      registerWithEmail,  
       logout 
     }}>
       {children}
