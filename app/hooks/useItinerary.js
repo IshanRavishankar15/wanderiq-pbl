@@ -3,15 +3,20 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 const LOCAL_STORAGE_KEY = 'wanderiq_saved_trips';
 
 export const useItinerary = () => {
+    const { user } = useAuth(); // Access auth state
     const [itinerary, setItinerary] = useState(null);
     const [flightSuggestions, setFlightSuggestions] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false); 
 
+    // --- Same Generate Logic as before ---
     const generateItinerary = useCallback(async (inputs) => {
         setIsLoading(true);
         setItinerary(null);
@@ -73,28 +78,39 @@ export const useItinerary = () => {
         }));
     }, []);
     
-    const saveCurrentItinerary = useCallback(() => {
+    // --- HYBRID SAVE LOGIC ---
+    const saveCurrentItinerary = useCallback(async () => {
         if (!itinerary) {
             toast.error('No itinerary to save.');
             return;
         }
 
+        const tripId = itinerary.savedId || Date.now();
+        const tripToSave = { ...itinerary, savedId: tripId };
+
         try {
-            const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
-            let storedTrips = storedTripsRaw ? JSON.parse(storedTripsRaw) : [];
-            
-            if (itinerary.savedId) {
-                storedTrips = storedTrips.filter(t => t.savedId !== itinerary.savedId);
+            if (user) {
+                // FIRESTORE SAVE
+                // Save to: users/{uid}/trips/{tripId}
+                const tripRef = doc(db, 'users', user.uid, 'trips', tripId.toString());
+                await setDoc(tripRef, tripToSave);
+            } else {
+                // LOCAL STORAGE SAVE (Guest)
+                const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+                let storedTrips = storedTripsRaw ? JSON.parse(storedTripsRaw) : [];
+                
+                // If editing, remove old version first
+                if (itinerary.savedId) {
+                    storedTrips = storedTrips.filter(t => t.savedId !== itinerary.savedId);
+                }
+
+                const updatedTrips = [...storedTrips, tripToSave];
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
             }
 
-            const newItineraryToSave = {
-                ...itinerary,
-                savedId: itinerary.savedId || Date.now()
-            };
+            // Update local state ID to match saved ID
+            setItinerary(prev => ({ ...prev, savedId: tripId }));
 
-            const updatedTrips = [...storedTrips, newItineraryToSave];
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
-            
             toast.success('Trip saved successfully!', {
                 style: {
                     borderRadius: '10px',
@@ -107,7 +123,7 @@ export const useItinerary = () => {
             console.error("Failed to save trip:", error);
             toast.error('Failed to save trip. Please try again.');
         }
-    }, [itinerary]);
+    }, [itinerary, user]); // Depend on user state
 
 
     return { 

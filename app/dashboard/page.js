@@ -7,6 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { useItinerary } from '@/hooks/useItinerary';
 import { useChat } from '@/hooks/useChat';
+// 1. Import Auth and Firebase
+import { useAuth } from '@/components/providers/AuthProvider';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
 import TripForm from '@/components/dashboard/TripForm';
 import GeneratingAnimation from '@/components/dashboard/GeneratingAnimation';
@@ -56,6 +61,9 @@ function DashboardPageContent() {
   const prefilledDestination = searchParams.get('destination');
   const editTripId = searchParams.get('editTripId');
 
+  // 2. Get User from Auth
+  const { user } = useAuth();
+
   const { 
     itinerary, 
     flightSuggestions, 
@@ -81,20 +89,45 @@ function DashboardPageContent() {
     return () => observer.disconnect();
   }, []);
 
+  // 3. MODIFIED: Handle loading logic for both Firestore (Auth) and LocalStorage (Guest)
   useEffect(() => {
-    if (editTripId) {
-      const storedTripsRaw = localStorage.getItem('wanderiq_saved_trips');
-      if (storedTripsRaw) {
-        const trips = JSON.parse(storedTripsRaw);
-        const tripToEdit = trips.find(t => t.savedId == editTripId);
-        
-        if (tripToEdit) {
-          setItinerary(tripToEdit);
-          setIsEditing(true);
+    const loadTripToEdit = async () => {
+        if (!editTripId) return;
+
+        // A. If Logged In -> Fetch from Firestore
+        if (user) {
+            try {
+                const docRef = doc(db, 'users', user.uid, 'trips', editTripId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setItinerary({ ...docSnap.data(), savedId: editTripId });
+                    setIsEditing(true);
+                } else {
+                    toast.error("Trip not found.");
+                }
+            } catch (err) {
+                console.error("Error loading trip:", err);
+                toast.error("Failed to load trip.");
+            }
+        } 
+        // B. If Guest -> Fetch from Local Storage
+        else {
+            const storedTripsRaw = localStorage.getItem('wanderiq_saved_trips');
+            if (storedTripsRaw) {
+                const trips = JSON.parse(storedTripsRaw);
+                const tripToEdit = trips.find(t => t.savedId == editTripId);
+                
+                if (tripToEdit) {
+                  setItinerary(tripToEdit);
+                  setIsEditing(true);
+                }
+            }
         }
-      }
-    }
-  }, [editTripId, setItinerary]);
+    };
+
+    loadTripToEdit();
+  }, [editTripId, user, setItinerary]); // Re-run if user status changes or ID changes
 
   const handleItineraryUpdate = (newItinerary) => {
     applyUpdatedItinerary(newItinerary);
@@ -108,7 +141,7 @@ function DashboardPageContent() {
   });
 
   const handleFormSubmit = async (inputs) => {
-    setIsEditing(false);
+    setIsEditing(false); 
     try {
       await generateItinerary(inputs);
     } catch (err) {

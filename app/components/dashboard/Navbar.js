@@ -1,11 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // MODIFIED: Import useRouter
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { Plane, Sun, Moon } from 'lucide-react';
+import { Plane, Sun, Moon, User, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Ubuntu } from 'next/font/google';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 const ubuntu = Ubuntu({
   subsets: ['latin'],
@@ -86,6 +87,8 @@ const HoverIndicator = styled(motion.div)`
 const NavRight = styled.div`
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
 `;
 
 const ThemeToggle = styled.button`
@@ -106,6 +109,31 @@ const ThemeToggle = styled.button`
   }
 `;
 
+const ProfileButton = styled.button`
+  background: none;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--secondary);
+  padding: 0.5rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: var(--purple-border);
+    color: white;
+  }
+  
+  img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+`;
+
 const navItems = [
   { href: '/dashboard', label: 'Create Itinerary' },
   { href: '/dashboard/saved', label: 'Saved Trips' },
@@ -114,8 +142,10 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter(); // MODIFIED: Init router
   const [isLightMode, setIsLightMode] = useState(false);
   const [hoveredPath, setHoveredPath] = useState(pathname);
+  const { user, logout } = useAuth(); // Removed loginWithGoogle since we redirect now
 
   useEffect(() => {
     const isLight = document.body.classList.contains('light-mode');
@@ -164,6 +194,20 @@ export default function Navbar() {
         <ThemeToggle onClick={toggleTheme} aria-label="Toggle theme">
           {isLightMode ? <Moon size={18} /> : <Sun size={18} />}
         </ThemeToggle>
+
+        {user ? (
+            <ProfileButton onClick={logout} title="Sign Out">                
+              <User size={20} />                
+                <span>{user.displayName?.split(' ')[0]}</span>
+                <LogOut size={16} />
+            </ProfileButton>
+        ) : (
+            // MODIFIED: Redirects to Landing Page instead of triggering Google Login directly
+            <ProfileButton onClick={() => router.push('/')}>
+                <User size={18} />
+                <span>Sign In</span>
+            </ProfileButton>
+        )}
       </NavRight>
     </NavWrapper>
   );

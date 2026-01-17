@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import SavedTripCard from '@/components/dashboard/SavedTripCard';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { db } from '@/lib/firebase';
+import { collection, query, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
 const PageWrapper = styled.div`
   padding: 1rem;
@@ -27,30 +31,79 @@ const LOCAL_STORAGE_KEY = 'wanderiq_saved_trips';
 
 export default function SavedTripsPage() {
     const [trips, setTrips] = useState([]);
-    const router = useRouter(); 
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+    const { user } = useAuth(); // Get auth state
 
+    // Hybrid Fetch Logic
     useEffect(() => {
-        const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (storedTripsRaw) {
-            const parsedTrips = JSON.parse(storedTripsRaw);
-            const sortedTrips = parsedTrips.sort((a, b) => b.savedId - a.savedId);
-            setTrips(sortedTrips);
-        }
-    }, []);
+        const fetchTrips = async () => {
+            setLoading(true);
+            try {
+                if (user) {
+                    // 1. Fetch from Firestore
+                    const tripsRef = collection(db, 'users', user.uid, 'trips');
+                    const q = query(tripsRef);
+                    const querySnapshot = await getDocs(q);
+                    const firestoreTrips = querySnapshot.docs.map(doc => ({
+                        ...doc.data(),
+                        // Ensure savedId matches the doc ID for deletion logic
+                        savedId: parseInt(doc.id) || doc.id 
+                    }));
+                    
+                    const sortedTrips = firestoreTrips.sort((a, b) => b.savedId - a.savedId);
+                    setTrips(sortedTrips);
+                } else {
+                    // 2. Fetch from LocalStorage (Guest)
+                    const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+                    if (storedTripsRaw) {
+                        const parsedTrips = JSON.parse(storedTripsRaw);
+                        const sortedTrips = parsedTrips.sort((a, b) => b.savedId - a.savedId);
+                        setTrips(sortedTrips);
+                    } else {
+                        setTrips([]);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching trips:", error);
+                toast.error("Failed to load saved trips.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const handleDeleteTrip = (tripIdToDelete) => {
-        const updatedTrips = trips.filter(trip => trip.savedId !== tripIdToDelete);
-        setTrips(updatedTrips);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
+        fetchTrips();
+    }, [user]); // Re-run when user state changes
+
+    const handleDeleteTrip = async (tripIdToDelete) => {
+        try {
+            if (user) {
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'users', user.uid, 'trips', tripIdToDelete.toString()));
+            } else {
+                // Delete from LocalStorage
+                const updatedTrips = trips.filter(trip => trip.savedId !== tripIdToDelete);
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
+            }
+
+            // Update local state
+            setTrips(prev => prev.filter(t => t.savedId !== tripIdToDelete));
+            toast.success("Trip deleted.");
+        } catch (error) {
+            console.error("Error deleting trip:", error);
+            toast.error("Failed to delete trip.");
+        }
     };
 
     const handleEditTrip = (tripId) => {
         router.push(`/dashboard?editTripId=${tripId}`);
     };
 
+    if (loading) return <PageWrapper><p>Loading trips...</p></PageWrapper>;
+
     return (
         <PageWrapper>
-            <Title>Saved Trips</Title>
+            <Title>Saved Trips {user ? '(Synced)' : '(Guest)'}</Title>
             {trips.length > 0 ? (
                 <TripsList>
                     {trips.map(trip => (
@@ -58,7 +111,7 @@ export default function SavedTripsPage() {
                             key={trip.savedId} 
                             trip={trip} 
                             onDelete={() => handleDeleteTrip(trip.savedId)} 
-                            onEdit={() => handleEditTrip(trip.savedId)} // MODIFIED: Pass onEdit handler
+                            onEdit={() => handleEditTrip(trip.savedId)} 
                         />
                     ))}
                 </TripsList>
