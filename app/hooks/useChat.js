@@ -3,11 +3,15 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-export const useChat = ({ itinerary, applyUpdatedItinerary }) => {
+export const useChat = ({ itinerary, applyUpdatedItinerary, initialMode = 'ask' }) => {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [chatMode, setChatMode] = useState('ask');
+    const [chatMode, setChatMode] = useState(initialMode);
     const isInitialized = useRef(false);
+
+    useEffect(() => {
+        setChatMode(initialMode);
+    }, [initialMode]);
 
     useEffect(() => {
         if (itinerary && itinerary.summary && !isInitialized.current) {

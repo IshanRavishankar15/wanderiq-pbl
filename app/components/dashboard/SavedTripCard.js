@@ -131,18 +131,22 @@ const TravelInfo = styled(InfoRow)`
   font-size: 0.8rem;
 `;
 
-
 const activityIcons = {
     sightseeing: <Camera size={20} />, culture: <MapIcon size={20} />, food: <Utensils size={20} />,
     relax: <Bed size={20} />, adventure: <Compass size={20} />, transport: <Plane size={20} />, other: <Sun size={20} />,
 };
 
-export default function SavedTripCard({ trip, onDelete }) {
+export default function SavedTripCard({ trip, onDelete, onEdit }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleDeleteClick = (e) => {
         e.stopPropagation();
         onDelete();
+    };
+
+    const handleEditClick = (e) => {
+        e.stopPropagation();
+        onEdit();
     };
 
     return (
@@ -155,7 +159,8 @@ export default function SavedTripCard({ trip, onDelete }) {
                     Your trip to {trip.destination}
                 </HeaderTitle>
                 <Actions>
-                    <ActionButton disabled title="Modify (coming soon)">
+                    {/* MODIFIED: Enabled Edit Button */}
+                    <ActionButton onClick={handleEditClick} title="Edit Trip">
                         <Edit size={18} />
                     </ActionButton>
                     <ActionButton $danger onClick={handleDeleteClick} title="Delete Trip">

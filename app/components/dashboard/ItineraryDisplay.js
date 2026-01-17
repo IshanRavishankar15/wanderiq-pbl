@@ -25,7 +25,7 @@ const SaveButton = styled.button`
   border: none;
   border-radius: 8px;
   background-color: var(--primary);
-  color: var(--primary-foreground);
+  color: var(--secondary);
   font-size: 0.93rem;
   font-weight: 500;
   cursor: pointer;

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useRouter } from 'next/navigation'; 
 import SavedTripCard from '@/components/dashboard/SavedTripCard';
 
 const PageWrapper = styled.div`
@@ -26,6 +27,7 @@ const LOCAL_STORAGE_KEY = 'wanderiq_saved_trips';
 
 export default function SavedTripsPage() {
     const [trips, setTrips] = useState([]);
+    const router = useRouter(); 
 
     useEffect(() => {
         const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -42,6 +44,10 @@ export default function SavedTripsPage() {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
     };
 
+    const handleEditTrip = (tripId) => {
+        router.push(`/dashboard?editTripId=${tripId}`);
+    };
+
     return (
         <PageWrapper>
             <Title>Saved Trips</Title>
@@ -52,6 +58,7 @@ export default function SavedTripsPage() {
                             key={trip.savedId} 
                             trip={trip} 
                             onDelete={() => handleDeleteTrip(trip.savedId)} 
+                            onEdit={() => handleEditTrip(trip.savedId)} // MODIFIED: Pass onEdit handler
                         />
                     ))}
                 </TripsList>

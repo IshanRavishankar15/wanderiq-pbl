@@ -50,9 +50,22 @@ const pageTransition = {
 function DashboardPageContent() {
   const [itineraryKey, setItineraryKey] = useState(Date.now());
   const [uiMode, setUiMode] = useState('dark');
+  const [isEditing, setIsEditing] = useState(false);
 
   const searchParams = useSearchParams();
   const prefilledDestination = searchParams.get('destination');
+  const editTripId = searchParams.get('editTripId');
+
+  const { 
+    itinerary, 
+    flightSuggestions, 
+    isLoading, 
+    error,
+    generateItinerary, 
+    applyUpdatedItinerary, 
+    saveCurrentItinerary,
+    setItinerary 
+  } = useItinerary();
 
   useEffect(() => {
     const checkUiMode = () => {
@@ -68,24 +81,34 @@ function DashboardPageContent() {
     return () => observer.disconnect();
   }, []);
 
-  const { 
-    itinerary, 
-    flightSuggestions, 
-    isLoading, 
-    error,
-    generateItinerary, 
-    applyUpdatedItinerary, 
-    saveCurrentItinerary 
-  } = useItinerary();
-  
+  useEffect(() => {
+    if (editTripId) {
+      const storedTripsRaw = localStorage.getItem('wanderiq_saved_trips');
+      if (storedTripsRaw) {
+        const trips = JSON.parse(storedTripsRaw);
+        const tripToEdit = trips.find(t => t.savedId == editTripId);
+        
+        if (tripToEdit) {
+          setItinerary(tripToEdit);
+          setIsEditing(true);
+        }
+      }
+    }
+  }, [editTripId, setItinerary]);
+
   const handleItineraryUpdate = (newItinerary) => {
     applyUpdatedItinerary(newItinerary);
     setItineraryKey(Date.now());
   };
 
-  const { messages, loading: chatLoading, sendMessage, chatMode, toggleChatMode } = useChat({ itinerary, applyUpdatedItinerary: handleItineraryUpdate });
+  const { messages, loading: chatLoading, sendMessage, chatMode, toggleChatMode } = useChat({ 
+      itinerary, 
+      applyUpdatedItinerary: handleItineraryUpdate,
+      initialMode: isEditing ? 'customize' : 'ask' 
+  });
 
   const handleFormSubmit = async (inputs) => {
+    setIsEditing(false);
     try {
       await generateItinerary(inputs);
     } catch (err) {
@@ -115,7 +138,7 @@ function DashboardPageContent() {
           </CenteredContainer>
         )}
 
-        {!isLoading && itinerary && flightSuggestions && (
+        {!isLoading && itinerary && (flightSuggestions || isEditing) && (
           <DisplayLayout
             key="display"
             initial={{ opacity: 0 }}
@@ -145,7 +168,7 @@ function DashboardPageContent() {
               </AnimatePresence>
             </Column>
             <Column>
-              <SuggestionsPanel flights={flightSuggestions} />
+              {!isEditing && <SuggestionsPanel flights={flightSuggestions} />}
             </Column>
           </DisplayLayout>
         )}

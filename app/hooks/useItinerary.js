@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const LOCAL_STORAGE_KEY = 'wanderiq_saved_trips';
 
@@ -50,15 +51,14 @@ export const useItinerary = () => {
             });
 
             setFlightSuggestions(flightsResponse.data);
-            console.log("flight done ig");
-            console.log(flightsResponse.data);
-
+            
             return itineraryData;
 
         } catch (err) {
             const errorMessage = err.response?.data?.error || err.message;
             setError(errorMessage);
             console.error("Error during itinerary generation:", err);
+            toast.error(`Failed to generate: ${errorMessage}`);
             setItinerary(null);
             throw new Error(errorMessage);
         } finally {
@@ -67,30 +67,45 @@ export const useItinerary = () => {
     }, []);
 
     const applyUpdatedItinerary = useCallback((newItinerary) => {
-        setItinerary(newItinerary);
+        setItinerary(prev => ({
+            ...newItinerary,
+            savedId: prev?.savedId
+        }));
     }, []);
     
     const saveCurrentItinerary = useCallback(() => {
         if (!itinerary) {
-            alert('No itinerary to save.');
+            toast.error('No itinerary to save.');
             return;
         }
 
         try {
             const storedTripsRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
-            const storedTrips = storedTripsRaw ? JSON.parse(storedTripsRaw) : [];
+            let storedTrips = storedTripsRaw ? JSON.parse(storedTripsRaw) : [];
             
+            if (itinerary.savedId) {
+                storedTrips = storedTrips.filter(t => t.savedId !== itinerary.savedId);
+            }
+
             const newItineraryToSave = {
                 ...itinerary,
-                savedId: Date.now()
+                savedId: itinerary.savedId || Date.now()
             };
 
             const updatedTrips = [...storedTrips, newItineraryToSave];
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedTrips));
-            alert('Trip saved successfully!');
+            
+            toast.success('Trip saved successfully!', {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+            
         } catch (error) {
             console.error("Failed to save trip:", error);
-            alert('Failed to save trip. Check the console for details.');
+            toast.error('Failed to save trip. Please try again.');
         }
     }, [itinerary]);
 
@@ -102,6 +117,7 @@ export const useItinerary = () => {
         isLoading, 
         generateItinerary, 
         applyUpdatedItinerary,
-        saveCurrentItinerary
+        saveCurrentItinerary,
+        setItinerary 
     };
 };
