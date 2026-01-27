@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; 
+import { usePathname, useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Plane, Sun, Moon, User, LogOut } from 'lucide-react';
@@ -18,10 +18,12 @@ const NavWrapper = styled.header`
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background-color: var(--card-background);
+  background-color: var(--navbar-background); 
   border-bottom: 1px solid var(--border);
   color: var(--foreground);
   transition: background-color 0.5s, color 0.5s, border-color 0.5s;
+  position: relative;
+  z-index: 50;
 `;
 
 const NavLeft = styled.div`
@@ -104,8 +106,8 @@ const ThemeToggle = styled.button`
   transition: background-color 0.2s, color 0.2s;
 
   &:hover {
-    background-color: var(--purple-border);
-    color: white;
+    background-color: var(--border);
+    color: var(--foreground);
   }
 `;
 
@@ -123,8 +125,8 @@ const ProfileButton = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    background-color: var(--purple-border);
-    color: white;
+    background-color: var(--border);
+    color: var(--foreground);
   }
   
   img {
@@ -142,10 +144,10 @@ const navItems = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter(); 
+  const router = useRouter();
   const [isLightMode, setIsLightMode] = useState(false);
   const [hoveredPath, setHoveredPath] = useState(pathname);
-  const { user, logout } = useAuth(); 
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const isLight = document.body.classList.contains('light-mode');
@@ -196,8 +198,8 @@ export default function Navbar() {
         </ThemeToggle>
 
         {user ? (
-            <ProfileButton onClick={logout} title="Sign Out">                
-              <User size={20} />                
+            <ProfileButton onClick={logout} title="Sign Out">
+                <User size={20} />
                 <span>{user.displayName?.split(' ')[0]}</span>
                 <LogOut size={16} />
             </ProfileButton>

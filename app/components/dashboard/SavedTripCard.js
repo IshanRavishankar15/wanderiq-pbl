@@ -3,133 +3,142 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ChevronDown, Trash2, Edit, MapPin, Clock, Sun, Utensils, Camera, Bed, Compass, Plane, Map as MapIcon, Car } from 'lucide-react';
+import { ChevronDown, Trash2, Edit, MapPin, Clock, Sun, Utensils, Camera, Bed, Compass, Plane, Map as MapIcon, Car, Calendar, Users } from 'lucide-react';
 
 const CardWrapper = styled(motion.div)`
   background-color: var(--card-background);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 0 6px black;
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 1rem 1.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  color: var(--foreground);
-  font-size: 1rem;
+  border-radius: 16px; /* Softer corners */
+  overflow: hidden; /* Keep image inside */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
-    background-color: color-mix(in srgb, var(--card-background) 90%, white 5%);
-    border-radius: 12px;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    border-color: var(--primary);
   }
 `;
 
-const HeaderTitle = styled.div`
+// NEW: Image Header Section
+const CardImageHeader = styled.div`
+  height: 140px;
+  background-image: url(${props => props.$bg});
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  
+  /* Gradient overlay to make text readable */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  }
+`;
+
+const HeaderContent = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  z-index: 2; /* Above gradient */
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-end;
+`;
+
+const TripTitle = styled.h2`
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+`;
+
+const TripMeta = styled.div`
+  display: flex;
   gap: 1rem;
-  font-size: 1.25rem;
-  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
 `;
 
-const ChevronIcon = styled.div`
-  transition: transform 0.2s ease-in-out;
-  transform: rotate(${props => props.$isOpen ? '90deg' : '0deg'});
-`;
-
-const Actions = styled.div`
+const ActionButtons = styled.div`
   display: flex;
-  align-items: center;
   gap: 0.5rem;
 `;
 
-const ActionButton = styled.button`
+const IconButton = styled.button`
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 50%;
+  color: white;
   cursor: pointer;
-  color: var(--secondary);
-  transition: color 0.2s, background-color 0.2s;
+  transition: all 0.2s;
 
   &:hover {
-    color: ${props => props.$danger ? '#ef4444' : 'var(--primary)'};
-    background-color: var(--border);
+    background: white;
+    color: var(--primary);
   }
 
-  &:disabled {
-    color: #6b7280;
-    cursor: not-allowed;
-    background-color: transparent;
+  &.danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
   }
 `;
 
-const ItineraryContent = styled(motion.div)`
-  padding: 0 1.5rem 1.5rem 1.5rem;
+const ToggleArea = styled.div`
+  padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  background: var(--card-background);
   border-top: 1px solid var(--border);
-  overflow: hidden;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(255,255,255,0.05);
+  }
+`;
+
+// ... (Keep existing Styled Components for content: ItineraryContent, DayCard, etc.) ...
+// Reuse the internal styles from your previous file for the expanded content
+const ItineraryContent = styled(motion.div)`
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  background: var(--card-background);
 `;
 
 const DayCard = styled.div`
   margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
 `;
 const DayHeader = styled.div`
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  h3 { font-size: 1.1rem; }
-  p { color: var(--secondary); font-size: 0.9rem; }
+  h3 { font-size: 1.1rem; color: var(--foreground); }
+  p { color: var(--secondary); font-size: 0.9rem; margin-bottom: 0.5rem;}
 `;
-const ActivitiesList = styled.ul`
-  list-style: none;
-  padding: 0.5rem 0;
-`;
-const ActivityItem = styled.li`
-  display: flex;
-  gap: 1rem;
-  padding: 0.75rem 0;
-`;
-const ActivityIcon = styled.div` color: var(--primary); `;
+const ActivitiesList = styled.ul` list-style: none; padding: 0; `;
+const ActivityItem = styled.li` display: flex; gap: 1rem; padding: 0.75rem 0; `;
+const ActivityIcon = styled.div` color: var(--primary); min-width: 24px; `;
 const ActivityDetails = styled.div` flex-grow: 1; p { font-weight: 500; } small { color: var(--secondary); display: flex; align-items: center; gap: 0.25rem; }`;
-
-const ActivityTime = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
-  font-weight: 600;
-  color: var(--secondary);
-  text-align: right;
-  flex-shrink: 0;
-  white-space: nowrap;
-`;
-
-const InfoRow = styled.small`
-  color: var(--secondary);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 4px;
-`;
-
-const WeatherInfo = styled(InfoRow)`
-  font-size: 0.8rem;
-`;
-
-const TravelInfo = styled(InfoRow)`
-  color: var(--secondary-muted);
-  font-style: italic;
-  font-size: 0.8rem;
-`;
+const InfoRow = styled.small` color: var(--secondary); display: flex; align-items: center; gap: 0.25rem; margin-top: 4px; `;
+const TravelInfo = styled(InfoRow)` color: var(--secondary-muted); font-style: italic; font-size: 0.8rem; `;
+const ActivityTime = styled.div` display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; font-weight: 600; color: var(--secondary); text-align: right; flex-shrink: 0; white-space: nowrap; `;
+const WeatherInfo = styled(InfoRow)` font-size: 0.8rem; `;
 
 const activityIcons = {
     sightseeing: <Camera size={20} />, culture: <MapIcon size={20} />, food: <Utensils size={20} />,
@@ -138,36 +147,38 @@ const activityIcons = {
 
 export default function SavedTripCard({ trip, onDelete, onEdit }) {
     const [isOpen, setIsOpen] = useState(false);
-
-    const handleDeleteClick = (e) => {
-        e.stopPropagation();
-        onDelete();
-    };
-
-    const handleEditClick = (e) => {
-        e.stopPropagation();
-        onEdit();
-    };
+    
+    // Fallback image if none exists in the itinerary
+    const coverImage = trip.days?.[0]?.imageUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80';
 
     return (
-        <CardWrapper>
-            <CardHeader onClick={() => setIsOpen(!isOpen)}>
-                <HeaderTitle>
-                    <ChevronIcon $isOpen={isOpen}>
-                        <ChevronDown size={24} />
-                    </ChevronIcon>
-                    Your trip to {trip.destination}
-                </HeaderTitle>
-                <Actions>
-                    {/* MODIFIED: Enabled Edit Button */}
-                    <ActionButton onClick={handleEditClick} title="Edit Trip">
-                        <Edit size={18} />
-                    </ActionButton>
-                    <ActionButton $danger onClick={handleDeleteClick} title="Delete Trip">
-                        <Trash2 size={18} />
-                    </ActionButton>
-                </Actions>
-            </CardHeader>
+        <CardWrapper layout>
+            <CardImageHeader $bg={coverImage}>
+                <HeaderContent>
+                    <div>
+                        <TripTitle>{trip.destination}</TripTitle>
+                        <TripMeta>
+                            <span><Calendar size={14}/> {trip.days.length} Days</span>
+                            <span><Users size={14}/> {trip.travelers} Travelers</span>
+                        </TripMeta>
+                    </div>
+                    <ActionButtons>
+                        <IconButton onClick={(e) => { e.stopPropagation(); onEdit(); }} title="Edit">
+                            <Edit size={16} />
+                        </IconButton>
+                        <IconButton className="danger" onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Delete">
+                            <Trash2 size={16} />
+                        </IconButton>
+                    </ActionButtons>
+                </HeaderContent>
+            </CardImageHeader>
+
+            <ToggleArea onClick={() => setIsOpen(!isOpen)}>
+                 <motion.div animate={{ rotate: isOpen ? 180 : 0 }}>
+                    <ChevronDown size={20} color="var(--secondary)" />
+                 </motion.div>
+            </ToggleArea>
+
             <AnimatePresence>
                 {isOpen && (
                     <ItineraryContent
@@ -175,7 +186,6 @@ export default function SavedTripCard({ trip, onDelete, onEdit }) {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.4, ease: 'easeInOut' }}
                     >
                         {trip.days.map((day, index) => (
                            <DayCard key={day.id}>
@@ -189,26 +199,12 @@ export default function SavedTripCard({ trip, onDelete, onEdit }) {
                                             <ActivityIcon>{activityIcons[activity.type] || <Sun size={20} />}</ActivityIcon>
                                             <ActivityDetails>
                                                 <p>{activity.activity}</p>
-                                                <InfoRow>
-                                                  <MapPin size={12} /> {activity.location}
-                                                </InfoRow>
-                                                {activity.travelToNext && (
-                                                  <TravelInfo>
-                                                    <Car size={12} />
-                                                    {activity.travelToNext.distance} &bull; {activity.travelToNext.time}
-                                                  </TravelInfo>
-                                                )}
+                                                <InfoRow><MapPin size={12} /> {activity.location}</InfoRow>
+                                                {activity.travelToNext && <TravelInfo><Car size={12} /> {activity.travelToNext.distance}</TravelInfo>}
                                             </ActivityDetails>
                                             <ActivityTime>
-                                              <div>
-                                                <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> 
-                                                {activity.time}
-                                              </div>
-                                              {activity.weather && (
-                                                <WeatherInfo>
-                                                  {activity.weather}
-                                                </WeatherInfo>
-                                              )}
+                                              <div><Clock size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> {activity.time}</div>
+                                              {activity.weather && <WeatherInfo>{activity.weather}</WeatherInfo>}
                                             </ActivityTime>
                                         </ActivityItem>
                                     ))}

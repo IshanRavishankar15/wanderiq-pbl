@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import styled, { keyframes } from 'styled-components';
-import { motion } from 'framer-motion'; 
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Plane, LogIn, Mail, Lock, User, Chrome, ArrowRight } from 'lucide-react';
 import { Ubuntu } from 'next/font/google';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 const ubuntu = Ubuntu({
@@ -14,11 +14,11 @@ const ubuntu = Ubuntu({
   weight: ['400', '700'],
 });
 
-const gradientShift = keyframes`
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-`;
+const BACKGROUND_IMAGES = [
+  "/wanderiq_bg1.png",
+  "/wanderiq_bg2.png",
+  "/wanderiq_bg3.png"
+];
 
 const LandingContainer = styled(motion.div)`
   position: relative;
@@ -29,32 +29,24 @@ const LandingContainer = styled(motion.div)`
   min-height: 100vh;
   padding: 2rem;
   text-align: center;
-  color: white;
+  color: white; 
   overflow: hidden;
+`;
 
-  background: linear-gradient(
-    300deg,
-    #0d0124,
-    #1a0251,
-    #3d1e78,
-    #1a0251,
-    #0d0124
-  );
-  background-size: 300% 300%;
-  animation: ${gradientShift} 8s ease infinite;
+const BackgroundLayer = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+`;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0) 60%
-    );
-    pointer-events: none;
-    z-index: 0;
-  }
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, 0.48);
 `;
 
 const Title = styled(motion.h1)`
@@ -64,10 +56,11 @@ const Title = styled(motion.h1)`
   font-weight: 800;
   margin-bottom: 0.5rem;
   letter-spacing: -0.05em;
-  color: #d1c4e9;
+  color: white;
   display: flex;
   align-items: center;
   gap: 1rem;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.5);
 
   @media (max-width: 768px) {
     font-size: 2.5rem;
@@ -82,21 +75,23 @@ const Subtitle = styled(motion.p)`
   font-size: 1.2rem;
   margin-bottom: 2rem;
   max-width: 600px;
-  color: #d1c4e9;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 `;
 
 const AuthCard = styled(motion.div)`
   position: relative;
   z-index: 2;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 2rem;
   border-radius: 24px;
   width: 100%;
   max-width: 400px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  color: white;
 `;
 
 const InputGroup = styled.div`
@@ -108,16 +103,17 @@ const InputGroup = styled.div`
     left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: #a855f7;
+    color: white;
     pointer-events: none;
+    opacity: 0.8;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 0.8rem 1rem 0.8rem 3rem;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   color: white;
   font-size: 1rem;
@@ -125,12 +121,12 @@ const Input = styled.input`
   transition: all 0.2s;
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
   }
 
   &:focus {
     border-color: #d946ef;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.5);
     box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.2);
   }
 `;
@@ -151,9 +147,11 @@ const PrimaryButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
 
   &:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
   }
   &:active {
     transform: scale(0.98);
@@ -168,6 +166,7 @@ const GoogleButton = styled(PrimaryButton)`
   background: white;
   color: #333;
   margin-top: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   
   &:hover {
     background: #f0f0f0;
@@ -178,7 +177,7 @@ const Divider = styled.div`
   display: flex;
   align-items: center;
   margin: 1.5rem 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
 
   &::before, &::after {
@@ -196,13 +195,13 @@ const ToggleText = styled.p`
   margin-top: 1rem;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
-  color: #d1c4e9;
+  color: rgba(255, 255, 255, 0.8);
   
   button {
     background: none;
     border: none;
-    color: #fff;
-    font-weight: 600;
+    color: white;
+    font-weight: 700;
     cursor: pointer;
     text-decoration: underline;
     margin-left: 0.5rem;
@@ -226,8 +225,7 @@ const GuestLink = styled(Link)`
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.6);
-    transform: translateY(-2px);
+    border-color: white;
   }
 `;
 
@@ -235,16 +233,22 @@ export default function LandingPage() {
   const { loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [loading, setLoading] = useState(false);
-  
-  // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  
+  const [bgIndex, setBgIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % BACKGROUND_IMAGES.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
     try {
       if (isLoginMode) {
         await loginWithEmail(email, password);
@@ -262,7 +266,24 @@ export default function LandingPage() {
   };
 
   return (
-    <LandingContainer>
+    <LandingContainer
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      <AnimatePresence>
+        <BackgroundLayer
+          key={bgIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2.5, ease: "easeInOut" }} 
+          style={{ backgroundImage: `url(${BACKGROUND_IMAGES[bgIndex]})` }}
+        />
+      </AnimatePresence>
+      
+      <Overlay />
+
       <Title
         className={ubuntu.className}
         initial={{ y: -20, opacity: 0 }}
@@ -270,7 +291,7 @@ export default function LandingPage() {
         transition={{ duration: 0.7 }}
       >
         <Plane size={48} color="#d946ef"/>
-      WanderIQ
+        WanderIQ
       </Title>
       
       <Subtitle

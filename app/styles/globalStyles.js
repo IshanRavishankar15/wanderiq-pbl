@@ -4,61 +4,45 @@ import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyles = createGlobalStyle`
   :root {
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     
-    /* Light Theme */
-    --background-light: #fff8f8ff;
+    --background-light: #ffffff;
     --foreground-light: #111827;
-    --card-background-light: #fdfaffff;
-    --secondary-light: #000000ff;
-    --border-light: #e5e7eb;
-    --primary-light: #d9aeffff;
-    --primary-hover-light: #e0bfffff;
+    --card-background-light: rgba(255, 255, 255, 0.4); 
+    --navbar-background-light: #ffffff;
+    --secondary-light: #000000;
+    --border-light: rgba(0, 0, 0, 0.1);
+    --primary-light: #d9aeff;
+    --primary-hover-light: #e0bfff;
 
-    /* Dark Theme */
-    --background-dark: #10001fff;
+    --background-dark: #000000;
     --foreground-dark: #e5e7eb;
-    --card-background-dark: #1f2937;
-    --secondary-dark: #ffffffff;
-    --border-dark: #374151;
+    --card-background-dark: rgba(20, 20, 20, 0.69);
+    --navbar-background-dark: #131313;
+    --secondary-dark: #ffffff;
+    --border-dark: rgba(255, 255, 255, 0.1);
     --primary-dark: #9333ea;
-    --primary-hover-dark: #a855f7;
+    --primary-hover-dark: #ae56ff;
 
-    /* Accent Colors (Purple) */
-    --primary-foreground: #ffffff;
-    --purple-background: #26095cff;
-    --purple-card-background: #251347ff;
-    --purple-border: #4b347dff;
-
-    /* Default to Dark Theme Variables */
     --background: var(--background-dark);
     --foreground: var(--foreground-dark);
     --card-background: var(--card-background-dark);
+    --navbar-background: var(--navbar-background-dark);
     --secondary: var(--secondary-dark);
     --border: var(--border-dark);
     --primary: var(--primary-dark);
     --primary-hover: var(--primary-hover-dark);
-
-    --shadow-color: 220 40% 2%;
-    --shadow-elevation-low:
-      0.3px 0.5px 0.7px hsl(var(--shadow-color) / 0.34),
-      0.4px 0.8px 1px -1.2px hsl(var(--shadow-color) / 0.34),
-      1px 2px 2.5px -2.5px hsl(var(--shadow-color) / 0.34);
-    --shadow-elevation-medium:
-      0.3px 0.5px 0.7px hsl(var(--shadow-color) / 0.36),
-      0.8px 1.6px 2px -0.8px hsl(var(--shadow-color) / 0.36),
-      2.1px 4.1px 5.2px -1.7px hsl(var(--shadow-color) / 0.36),
-      5px 10px 12.6px -2.5px hsl(var(--shadow-color) / 0.36);
+    
+    --backdrop-blur: blur(20px);
   }
 
-  /* Class for explicit light mode */
   .light-mode {
     --background: var(--background-light);
     --foreground: var(--foreground-light);
     --card-background: var(--card-background-light);
+    --navbar-background: var(--navbar-background-light);
     --secondary: var(--secondary-light);
     --border: var(--border-light);
-    --shadow-color: 220 3% 15%;
     --primary: var(--primary-light);
     --primary-hover: var(--primary-hover-light);
   }
@@ -69,17 +53,42 @@ const GlobalStyles = createGlobalStyle`
     margin: 0;
   }
 
-  html,
-  body {
-    max-width: 100vw;
-    overflow-x: hidden;
+  html, body {
+    width: 100%;
+    min-height: 100vh;
     font-family: var(--font-sans);
   }
 
   body {
-    background-color: var(--background);
     color: var(--foreground);
-    transition: background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background-color: transparent; 
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -50;
+    
+    background-color: var(--background);
+    
+    background-image: 
+      radial-gradient(circle at 0% 50%, rgba(147, 51, 234, 0.3), transparent 50%),
+      radial-gradient(circle at 100% 50%, rgba(126, 34, 206, 0.3), transparent 50%);
+      
+    background-repeat: no-repeat;
+    background-size: cover;
+    transition: background-color 0.5s ease;
+  }
+
+  .light-mode body::before {
+    background-image: 
+      radial-gradient(circle at 0% 50%, rgba(216, 180, 254, 0.6), transparent 50%),
+      radial-gradient(circle at 100% 50%, rgba(192, 132, 252, 0.5), transparent 50%);
   }
 
   a {
@@ -87,10 +96,17 @@ const GlobalStyles = createGlobalStyle`
     text-decoration: none;
   }
 
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  div[class*="Card"], 
+  div[class*="Panel"], 
+  div[class*="Wrapper"], 
+  div[class*="Container"] {
+     backdrop-filter: var(--backdrop-blur);
+     -webkit-backdrop-filter: var(--backdrop-blur);
+  }
+
+  nav, header, div[class*="Navbar"] {
+     backdrop-filter: none !important;
+     -webkit-backdrop-filter: none !important;
   }
 `;
 

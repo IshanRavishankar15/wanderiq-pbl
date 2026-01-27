@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { MapPin, Calendar, Users, ThumbsUp } from 'lucide-react';
 import CreatableSelect from 'react-select/creatable';
 import destinationData from '@/lib/destinations.json';
@@ -19,6 +19,7 @@ const FormWrapper = styled.form`
   width: 950px;
   max-width: 98vw;
 `;
+
 const RowWrapper = styled.div`
   display: flex;
   gap: 2rem;
@@ -30,40 +31,46 @@ const RowWrapper = styled.div`
     margin-bottom: 1.25rem;
   }
 `;
+
 const FormTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.7rem;
   text-align: center;
 `;
+
 const FieldWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 `;
+
 const Label = styled.label`
   font-size: 1rem;
   font-weight: 500;
   color: var(--secondary);
 `;
+
 const InputGroup = styled.div`
   position: relative;
 `;
+
 const InputIcon = styled.div`
   position: absolute;
   top: 50%;
   left: 12px;
   transform: translateY(-50%);
-  color: var(--secondary);
+  color: var(--foreground);
   pointer-events: none;
   z-index: 10;
 `;
+
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 1px solid var(--purple-border);
+  border: 1px solid var(--primary); 
   border-radius: 8px;
-  background-color: var(--card-background);
+  background-color: rgba(0, 0, 0, 0.2);
   color: var(--foreground);
   font-size: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -79,40 +86,74 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+    border-color: var(--primary-hover);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent);
   }
 `;
+
+const shimmer = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
 const SubmitButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--primary);
-  color: var(--secondary);
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-  width: 200px;
+  position: relative;
   align-self: center;
+  width: 240px;
+  padding: 0.8rem 1.5rem;
+  
+  background: linear-gradient(135deg, var(--primary) 0%, #d946ef 100%);
+  background-size: 200% 200%;
+  
+  border: none;
+  border-radius: 12px;
+  
+  /* MODIFIED: Uses secondary color (Black in Light Mode, White in Dark Mode) */
+  color: var(--secondary);
+  
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-elevation-medium);
-    background-color: var(--primary-hover);
+    /* MODIFIED: Removed scale/translate, kept only the enhanced glow */
+    transform: none; 
+    box-shadow: 0 0 25px rgba(147, 51, 234, 0.7);
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    /* Kept the press-down effect */
+    transform: scale(0.98);
+    box-shadow: 0 2px 10px rgba(147, 51, 234, 0.3);
   }
 
   &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    opacity: 0.7;
+    cursor: wait;
     transform: none;
     box-shadow: none;
+    background: var(--border); 
+    color: var(--secondary);
+    animation: ${shimmer} 2s infinite linear;
   }
 `;
+
 const destinationOptions = destinationData.destinations.map(dest => ({
   value: dest,
   label: dest
 }));
+
 const interestOptions = [
   { value: 'Adventure', label: 'Adventure' },
   { value: 'Beaches', label: 'Beaches' },
@@ -125,16 +166,17 @@ const interestOptions = [
   { value: 'Shopping', label: 'Shopping' },
   { value: 'Sightseeing', label: 'Sightseeing' },
 ];
+
 const selectStyles = {
   control: (baseStyles, state) => ({
     ...baseStyles,
-    backgroundColor: 'var(--card-background)',
-    borderColor: state.isFocused ? 'var(--primary)' : 'var(--purple-border)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderColor: 'var(--primary)', 
     borderRadius: '8px',
     minHeight: '44px',
-    boxShadow: state.isFocused ? '0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent)' : 'none',
+    boxShadow: state.isFocused ? '0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent)' : 'none',
     '&:hover': {
-      borderColor: 'var(--primary)',
+      borderColor: 'var(--primary-hover)',
     },
   }),
   valueContainer: (base) => ({
@@ -151,21 +193,23 @@ const selectStyles = {
   }),
   menu: (baseStyles) => ({
     ...baseStyles,
-    backgroundColor: 'var(--card-background)',
-    border: '1px solid var(--purple-border)',
-    zIndex: 20
+    backgroundColor: 'var(--navbar-background)', 
+    border: '1px solid var(--primary)',
+    zIndex: 100
   }),
   option: (baseStyles, { isFocused, isSelected }) => ({
     ...baseStyles,
-    backgroundColor: isSelected ? 'var(--primary)' : isFocused ? 'var(--border)' : 'var(--card-background)',
+    backgroundColor: isSelected ? 'var(--primary)' : isFocused ? 'rgba(147, 51, 234, 0.1)' : 'transparent',
     color: isSelected ? 'white' : 'var(--foreground)',
+    cursor: 'pointer',
     '&:active': {
       backgroundColor: 'var(--primary)',
     },
   }),
   multiValue: (base) => ({
     ...base,
-    backgroundColor: 'var(--border)',
+    backgroundColor: 'rgba(147, 51, 234, 0.2)',
+    border: '1px solid var(--primary)',
   }),
   multiValueLabel: (base) => ({
     ...base,
@@ -174,8 +218,8 @@ const selectStyles = {
   }),
   multiValueRemove: (base) => ({
     ...base,
-    color: 'var(--secondary)',
-    '&:hover': {
+    color: 'var(--foreground)',
+    ':hover': {
       backgroundColor: 'var(--primary)',
       color: 'white',
     },
@@ -325,8 +369,9 @@ export default function TripForm({ onSubmit, loading, prefilledDestination }) {
           </InputGroup>
         </FieldWrapper>
       </RowWrapper>
+      
       <SubmitButton type="submit" disabled={loading}>
-        {loading ? 'Generating...' : 'Create Itinerary'}
+        {loading ? 'Crafting Plan...' : 'Create Itinerary'}
       </SubmitButton>
     </FormWrapper>
   );
