@@ -11,7 +11,7 @@ export const chatCompletion = async ({ messages, timeout = 60000, retries = 1, r
 
   try {
     const body = {
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-nano',
       messages,
     };
     if (response_format) {
